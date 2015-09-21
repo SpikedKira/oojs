@@ -4,70 +4,145 @@
     <script>
       var TestClosure = function() {
 
-        /* create a Pet class */
-        var Pet = Class (
-          function( name ) {
-            console.log("pet constructor");
-            this.name = name;
-            var x = name;
+        // declare Lifeform class //
+        var Lifeform = Class( "Lifeform",
+          function() {
+            this.isAlive = true;
+          }
+        );
 
-            this.getName = function() {
-              return x;
+
+        // declare Mammal class and extend Lifeform //
+        var Mammal = Class( "Mammal", Extend, Lifeform,
+          function() {
+            this.legs;
+
+            // define a function that's later overridden in an extended class //
+            this.checkSuper = function(x) {
+              var x = x || 0;
+              return "mammal super: " + this.legs + ": " + x;
+            }
+          }
+        );
+
+
+        // declare Human class and extend Mammal //
+        var Human = Class( "Human", Extend, Mammal,
+          function( props ) {
+            this.legs = 2;
+            this.name;
+
+            var priv = "";
+
+            this.setPrivate = function(val) {
+              priv = val;
             };
 
-            console.log("end pet const");
-        } );
-
-
-        /* create a Dog class that extends Pet */
-        var Dog = Class ( Extend, Pet,
-          function( name ) {
-            console.log("dog constructor");
-            var _super = this.initialize(arguments);
-
-            this.traits = {};
-
-            this.getName = function() {
-              return "test " + _super.getName();
+            this.getPrivate = function() {
+              return priv;
             };
 
-            console.log("end dog const");
-        } );
+            // setup and call initializer //
+            var init = function(p) {
+              this.name = p.name;
+
+              // check for our private variable for initialization //
+              if( p.priv ) {
+                priv = p.priv;
+              }
+            }.call(this, props);
+          }
+        );
 
 
-        /* create a Beagle class that extends Dog */
-        var Beagle = Class ( Extend, Dog,
-          function( name ) {
-            console.log("beagle constructor");
-            var _super = this.initialize(arguments);
+        // declare Dog class and extend Mammal //
+        var Dog = Class( "Dog", Extend, Mammal,
+          function() {
+            this.legs = 4;
 
-            this.name = "Betty";
-
-            this.getName = function() {
-              return "beagle: " + _super.getName();
+            this.checkSuper = function() {
+              return "overridden";
             };
 
-            console.log("end beagle const");
-        } );
+            this.getSuper = function() {
+              return "dog " + this._super().checkSuper(5);
+            };
+          }
+        );
+        /* ####### END SETUP TEST CLASSES ####### */
 
 
+        /* ########### START TESTING ############ */
+        var Beagle = new Dog();
+        var Jessica = new Human({
+          name: "Jessica",
+          priv: "waka"
+        });
+        var Timothy = new Human({
+          name: "Tim"
+        });
 
-        var d1 = new Dog( "Sarah" );
+        var Terrier = new Dog();
 
-        d1.traits.color = "brown";
-        d1.traits.weight = 25;
+        var Life = new Lifeform();
 
-        var d2 = new Beagle( "Monica" );
+        // test non extended //
+        console.log("## test unextended class");
+        console.log(Life);
 
-        d2.traits.color = "white";
-        d2.traits.weight = 40;
+        // test prototype chain //
+        Lifeform.prototype.waka = "all lifeforms should have this";
+        console.log("## test prototyping..");
+        console.log(Jessica.waka, " :: ", Beagle.waka);
 
-        console.log( d1.getName(), d1.traits );
-        console.log( d2.name );
-        console.log( d2.getName(), d2.traits );
+        // test instanceof //
+        console.log("## is beagle a dog, a mammal, and a lifeform?");
+        console.log(Beagle instanceof Dog && Beagle instanceof Mammal && Beagle instanceof Lifeform);
+        console.log("## make sure beagle is not a human (should be false)");
+        console.log(Beagle instanceof Human);
 
-        console.log( d2 instanceof Dog && d2 instanceof Beagle );
-        console.log( d2.constructor === Beagle );
+        // test constructors //
+        console.log("## is jessica constructor human?");
+        console.log(Jessica.constructor === Human);
+
+        // test inheritance //
+        console.log("## are all lifeforms alive?");
+        console.log( Jessica.isAlive && Beagle.isAlive );
+
+        // test private variables //
+        console.log("## test private variable getter; should output 'waka' for jessica");
+        console.log( Jessica.getPrivate("priv") );
+        console.log("## and should be unchanged (blank string) for tim");
+        console.log( Timothy.getPrivate("priv") );
+        Timothy.setPrivate("waka waka");
+        console.log("## but should now be 'waka waka' for tim");
+        console.log( Timothy.getPrivate("priv") );
+        console.log("## and still 'waka' for jessica");
+        console.log( Jessica.getPrivate("priv") );
+
+        // test public vars and collisions //
+        console.log("## timothy's name should be tim... then changed to timothy");
+        console.log( Timothy.name );
+        Timothy.name = "Timothy";
+        console.log( Timothy.name );
+        console.log("## make sure Jessica's name has not changed");
+        console.log( Jessica.name );
+
+        // test supers.. //
+        console.log("## check super ('mammal super: 2: 0', 'overridden', 'dog mammal super: 4: 5')");
+        console.log( Jessica.checkSuper(), ", ", Beagle.checkSuper(), ", ", Beagle.getSuper() );
+
+        console.log("## check super collision ('dog mammal super: 4: 5, dog mammal super: 3: 5')");
+        Terrier.legs = 3; // i guess he's wounded
+        console.log( Beagle.getSuper(), ", ", Terrier.getSuper() );
+
+        // output the objects for manual checking //
+        console.log("## output Beagle object");
+        console.log(Beagle);
+        console.log("## output Jessica object");
+        console.log(Jessica);
+        console.log("## output Timothy object");
+        console.log(Timothy);
       }();
     </script>
 
