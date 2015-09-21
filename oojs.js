@@ -2,6 +2,19 @@ var Extend = "extends";
 var Class = function(operation, parent, fn) {
   var childfn = fn || operation;
 
+  // singleton operation //
+  if( operation == "singleton" ) {
+    childfn = parent;
+    var temp = function() {
+      if( arguments.callee._singletonInstance )
+        return arguments.callee._singletonInstance;
+      arguments.callee._singletonInstance = this;
+      return childfn.apply(this);
+    };
+    return temp;
+  }
+
+  // extend operation //
   if( operation == "extends" && parent != undefined ) {
     childfn.prototype = Object.create( parent.prototype );
     //childfn.prototype._super = parent;
