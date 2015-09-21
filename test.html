@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      Class ( Foo =
+        function( seed ) {
+          var priv = 1;
+          this.pub = 2;
+
+          this.debug = function() {
+            console.log("foo.debug");
+            priv = priv + 1;
+            return priv;
+          };
+
+          this.init = function(self) {
+            console.log("init foo");
+            priv = seed;
+          }(this);
+        }
+      );
+
+
+      Class ( Bar = // extends Foo
+        function() {
+          //this._super.apply(this, arguments);
+
+          this.debug = function() {
+            console.log("bar.debug");
+            alert(this._super);
+            return 1;
+          };
+
+          this.init = function(self) {
+            console.log("init bar");
+          }(this);
+        },
+      extend, Foo );
+
+
+
+      var a = new Foo(22);
+      var b = new Bar(15);
+      b.pub = 5;
+      console.log(b.pub + " :: " + a.pub);
+      console.log(b.debug() + " :: " + a.debug());
+      console.log(b instanceof Bar && b instanceof Foo);
+      console.log(a instanceof Bar && a instanceof Foo);
+      console.log(b.constructor === Bar);
+    </script>
+
+  </head>
+  <body>
+
+  </body>
+</html>
