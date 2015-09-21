@@ -1,32 +1,32 @@
-var extend = "extends";
-function Class(child, operator, parent) {
-  this[child.name] = child;
+var Extend = "extends";
+function Class(child, operation, parent, fn) {
+  var name = child.name || child;
+  var childfn = fn || (typeof operation == "function" ? operation : child);
+  this[name] = childfn;
 
-  if( operator == "extends" && parent != undefined ) {
-    function F() {};
-    F.prototype = parent.prototype;
-    child.prototype = new F();
-    //child.prototype = Object.create(parent.prototype);
-    child.prototype._super = parent;
-    child.prototype.constructor = child;
+  if( operation == "extends" && parent != undefined ) {
+    this[name].prototype = Object.create( parent.prototype );
+    //this[name].prototype._super = parent;
 
-    var x = new child();
-    var y = new parent();
-    for( var i in y ) {
-      if( x[i] != undefined && typeof x[i] == "function" ) {
-        console.log("replacing: " + i);
-        x[i] = (function(name, fn) {
-          return function() {
-            var tmp = this._super;
-            this._super = parent.prototype[name];
-            console.log("replaced function called");
-            var ret = fn.apply(this, arguments);
-            this._super = tmp;
-            return ret;
-          }
-        })(i, x[i]);
-      }
-    }
-    child.prototype = x;
+    var sc = new Array();
+    if( parent.prototype._superChain )
+      sc = parent.prototype._superChain.slice(0);
+    sc.push(parent);
+    this[name].prototype._superChain = sc;
+    //console.log("setting super chain " + sc.length + " :: " + sc);
+
+    this[name].prototype.initialize = function(args) {
+      if( this._scInit == undefined )
+        this._scInit = this._superChain.length;
+
+      this._superChain[--this._scInit].apply(this, args);
+
+      _super = {};
+      for( var j in this )
+        if( typeof this[j] == "function" && j != "initialize" )
+          _super[j] = this[j];
+
+      return _super;
+    };
   }
-};
+}

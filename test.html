@@ -2,51 +2,65 @@
 <html>
   <head>
     <script>
-      Class ( Foo =
-        function( seed ) {
-          var priv = 1;
-          this.pub = 2;
+      // create a Pet class //
+      Class ( "Pet",
+        function( name ) {
+          console.log("pet constructor");
+          this.name = name;
+          var x = name;
 
-          this.debug = function() {
-            console.log("foo.debug");
-            priv = priv + 1;
-            return priv;
+          this.getName = function() {
+            return x;
           };
 
-          this.init = function(self) {
-            console.log("init foo");
-            priv = seed;
-          }(this);
-        }
-      );
+          console.log("end pet const");
+      } );
 
+      // create a Dog class that extends Pet //
+      Class ( "Dog", Extend, Pet,
+        function( name ) {
+          console.log("dog constructor");
+          var _super = this.initialize(arguments);
 
-      Class ( Bar = // extends Foo
-        function() {
-          //this._super.apply(this, arguments);
+          this.traits = {};
 
-          this.debug = function() {
-            console.log("bar.debug");
-            alert(this._super);
-            return 1;
+          this.getName = function() {
+            return "test " + _super.getName();
           };
 
-          this.init = function(self) {
-            console.log("init bar");
-          }(this);
-        },
-      extend, Foo );
+          console.log("end dog const");
+      } );
+
+      // create a Beagle class that extends Dog //
+      Class ( "Beagle", Extend, Dog,
+        function( name ) {
+          console.log("beagle constructor");
+          var _super = this.initialize(arguments);
+
+          this.name = "Betty";
+
+          this.getName = function() {
+            return "beagle: " + _super.getName();
+          };
+
+          console.log("end beagle const");
+      } );
 
 
 
-      var a = new Foo(22);
-      var b = new Bar(15);
-      b.pub = 5;
-      console.log(b.pub + " :: " + a.pub);
-      console.log(b.debug() + " :: " + a.debug());
-      console.log(b instanceof Bar && b instanceof Foo);
-      console.log(a instanceof Bar && a instanceof Foo);
-      console.log(b.constructor === Bar);
+      var d1 = new Dog( "Sarah" );
+
+      d1.traits.color = "brown";
+      d1.traits.weight = 25;
+
+      var d2 = new Beagle( "Monica" );
+
+      d2.traits.color = "white";
+      d2.traits.weight = 40;
+
+      console.log( d1.getName(), d1.traits );
+      console.log( d2.name );
+      console.log( d2.getName(), d2.traits );
     </script>
 
   </head>
