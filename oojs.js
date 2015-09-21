@@ -1,38 +1,34 @@
-var extens = "extends";
-function Class(child, operation, parent, fn) {
-  var name = child.name || child;
-  var childfn = fn || (typeof operation == "function" ? operation : child);
-  this[name] = childfn;
+var Extend = "extends";
+var Class = function(operation, parent, fn) {
+  var childfn = fn || operation;
 
   if( operation == "extends" && parent != undefined ) {
-    this[name].prototype = Object.create( parent.prototype );
-    this[name].prototype._super = parent;
+    childfn.prototype = Object.create( parent.prototype );
+    //childfn.prototype._super = parent;
+    childfn.prototype.initializing = false;
+    childfn.prototype.constructor = childfn;
 
     var sc = new Array();
     if( parent.prototype._superChain )
       sc = parent.prototype._superChain.slice(0);
     sc.push(parent);
-    this[name].prototype._superChain = sc;
-    console.log("setting super chain " + sc.length + " :: " + sc);
+    childfn.prototype._superChain = sc;
 
-    this[name].prototype.initialize = function(args) {
-      if( this.initializing ) return;
+    childfn.prototype.initialize = function(args) {
       this.initializing = true;
+      if( this._scInit == undefined )
+        this._scInit = this._superChain.length;
 
-      this._super = {};
+      this._superChain[--this._scInit].apply(this, args);
 
-      var scl = this._superChain.length;
-      for( var i = 0; i < scl; i++ ) {
-        this._superChain[i].apply(this, args);
-        for( var j in this )
-          if( typeof this[j] == "function" && j != "initialize" ) {
-            console.log("saving super function: " + this[j]);
-            this._super[j] = this[j]; // this gives only 1 level up for functional calling
-          }
-      }
-      //parent.apply(this, args); // recursion loop occurs here if we don't set a flag
+      _super = {};
+      for( var j in this )
+        if( typeof this[j] == "function" && j != "initialize" )
+          _super[j] = this[j];
 
       this.initializing = false;
+      return _super;
     };
   }
+  return childfn;
 }
